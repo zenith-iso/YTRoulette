@@ -1,0 +1,13 @@
+<button onclick="Gen()">do the thing</button>
+
+<script>
+  const queryPool = ["MOV XXXX", "MVI XXXX", "IMG XXXX"];
+  function Gen() {
+    const selection = queryPool[Math.floor(Math.random() * queryPool.length)];
+    const digit = String(Math.floor(Math.random() * 9999) + 1).padStart(4, '0');
+    const randomized = selection.replace("XXXX",digit);
+    console.log(randomized) 
+    window.open('https://www.youtube.com/results?search_query="'+randomized+'"')   
+    /* god please save me from this world of javascript */
+}
+</script>
