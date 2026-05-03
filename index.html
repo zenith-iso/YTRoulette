@@ -1,13 +1,93 @@
-<button onclick="Gen()">do the thing</button>
+<!DOCTYPE html>
 
-<script>
-  const queryPool = ["MOV XXXX", "MVI XXXX", "IMG XXXX"];
-  function Gen() {
-    const selection = queryPool[Math.floor(Math.random() * queryPool.length)];
-    const digit = String(Math.floor(Math.random() * 9999) + 1).padStart(4, '0');
-    const randomized = selection.replace("XXXX",digit);
-    console.log(randomized) 
-    window.open('https://www.youtube.com/results?search_query="'+randomized+'"')   
-    /* god please save me from this world of javascript */
-}
-</script>
+<html>
+    <title>YTRoulette</title>
+
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #e6e6e6;
+            font-family: sans-serif;
+            text-align: center;
+            flex-direction: column;
+        }
+
+        img {
+            width: 300px;
+            height: 300px;
+            object-fit: contain;
+            margin: 20px 0;
+            transition: transform 3s ease-out;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            background: black;
+            color: white;
+            cursor: pointer;
+        }
+
+        .credits {
+            position: fixed;
+            bottom: 10px;
+            font-size: 14px;
+        }
+
+        .credits a {
+            color: black;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .credits a:hover {
+            text-decoration: underline;
+        }
+    </style>
+
+    <h1>YTRoulette</h1>
+
+    <img id="wheel" src="https://iili.io/BLiviHg.png" width="627" height="627" /> >
+
+    <button onclick="spinWheel()">spin!</button>
+
+    <div class="credits">
+        made by <a href="https://x.com/zenithiso" target="_blank">@zenith.iso</a> —
+        inspired by <a href="https://www.youtube.com/@KVNAUST" target="_blank">KVN AUST</a>
+    </div>
+
+    <script>
+    const queryPool = ["MOV XXXX", "MVI XXXX", "IMG XXXX"];
+
+    function spinWheel() {
+        const wheel = document.getElementById("wheel");
+
+        const spins = Math.floor(Math.random() * 3) + 3;
+        const extra = Math.random() * 360;
+
+        const totalRotation = spins * 360 + extra;
+
+        wheel.style.transform = "rotate(" + totalRotation + "deg)";
+
+        setTimeout(() => {
+            Gen();
+        }, 3000);
+    }
+
+    function Gen() {
+        const selection = queryPool[Math.floor(Math.random() * queryPool.length)];
+        const digit = String(Math.floor(Math.random() * 9999) + 1).padStart(4, '0');
+        const randomized = selection.replace("XXXX",digit);
+        console.log(randomized) 
+        window.open('https://www.youtube.com/results?search_query="'+randomized+'"')   
+        /* god please save me from this world of javascript */
+    }
+    </script>
+
+</html>
