@@ -80,6 +80,18 @@
             padding: 4px;
             border-radius: 6px;
         }
+
+        #fastToggle {
+            position: fixed;
+            top: 50px;
+            right: 16px;
+            font-size: 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 6px;
+        }
     </style>
 
     <h1>YTRoulette</h1>
@@ -94,17 +106,23 @@
     </div>
 
     <button id="darkToggle" onclick="toggleDark()" title="Toggle dark mode">🌙</button>
+    <button id="fastToggle" onclick="toggleFast()" title="Toggle FASTmode">🏃‍♂️‍➡️</button>
 
     <script>
     const queryPool = ["MOV XXXX", "MVI XXXX", "IMG XXXX", "GOPRXXXX", "SAM XXXX", "DSC XXXX", "DSCFXXXX", "SDV XXXX"];
 
     let totalRotation = 0;
+    let fastMode = false;
 
     function toggleDark() {
         const html = document.documentElement;
         const isDark = html.getAttribute('data-theme') === 'dark';
         html.setAttribute('data-theme', isDark ? 'light' : 'dark');
         document.getElementById('darkToggle').textContent = isDark ? '🌙' : '☀️';
+    }
+
+    function toggleFast() {
+        fastMode = !fastMode;
     }
 
     function spinWheel() {
@@ -114,11 +132,14 @@
         const extra = Math.random() * 360;
 
         totalRotation += spins * 360 + extra;
+
+        // change animation speed based on mode
+        wheel.style.transition = fastMode ? "transform 0.2s linear" : "transform 3s ease-out";
         wheel.style.transform = "rotate(" + totalRotation + "deg)";
 
         setTimeout(() => {
             Gen();
-        }, 3000);
+        }, fastMode ? 200 : 3000);
     }
 
     function Gen() {
