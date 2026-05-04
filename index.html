@@ -42,7 +42,6 @@
             transition: transform 3s ease-out;
         }
 
-
         button {
             padding: 12px 30px;
             font-size: 18px;
@@ -81,53 +80,13 @@
             padding: 4px;
             border-radius: 6px;
         }
-
-        #embed-wrap {
-            display: none;
-            margin-top: 20px;
-            width: 560px;
-            max-width: 90vw;
-        }
-
-        #embed-wrap iframe {
-            width: 100%;
-            aspect-ratio: 16/9;
-            border: none;
-            border-radius: 10px;
-        }
-
-        #status {
-            font-size: 13px;
-            color: var(--text);
-            opacity: 0.5;
-            min-height: 18px;
-            margin-top: 8px;
-        }
-
-        #fallback-link {
-            display: none;
-            margin-top: 10px;
-            font-size: 13px;
-        }
-
-        #fallback-link a {
-            color: var(--credits-color);
-        }
     </style>
 
     <h1>YTRoulette</h1>
 
-    <img id="wheel" src="https://iili.io/BLiviHg.png" width="627" height="627" /> >
+    <img id="wheel" src="https://iili.io/BLiviHg.png" width="627" height="627" />
 
     <button onclick="spinWheel()">spin!</button>
-
-    <div id="status"></div>
-
-    <div id="embed-wrap">
-        <iframe id="ytEmbed" allowfullscreen allow="autoplay; encrypted-media"></iframe>
-    </div>
-
-    <div id="fallback-link"></div>
 
     <div class="credits">
         made by <a href="https://x.com/zenithiso" target="_blank">@zenith.iso</a> —
@@ -137,7 +96,7 @@
     <button id="darkToggle" onclick="toggleDark()" title="Toggle dark mode">🌙</button>
 
     <script>
-    const queryPool = ["MOV XXXX", "MVI XXXX", "IMG XXXX", "GOPRXXXX", "SAM XXXX", "DSC XXXX", "DSCFXXXX","SDV XXXX"];
+    const queryPool = ["MOV XXXX", "MVI XXXX", "IMG XXXX", "GOPRXXXX", "SAM XXXX", "DSC XXXX", "DSCFXXXX", "SDV XXXX"];
 
     let totalRotation = 0;
 
@@ -157,56 +116,17 @@
         totalRotation += spins * 360 + extra;
         wheel.style.transform = "rotate(" + totalRotation + "deg)";
 
-        document.getElementById('embed-wrap').style.display = 'none';
-        document.getElementById('ytEmbed').src = '';
-        document.getElementById('fallback-link').style.display = 'none';
-        document.getElementById('status').textContent = '';
-
         setTimeout(() => {
             Gen();
         }, 3000);
     }
 
-    async function Gen() {
+    function Gen() {
         const selection = queryPool[Math.floor(Math.random() * queryPool.length)];
         const digit = String(Math.floor(Math.random() * 9999) + 1).padStart(4, '0');
         const randomized = selection.replace("XXXX", digit);
-        console.log(randomized);
-
-        document.getElementById('status').textContent = 'searching...';
-
-        try {
-            const videoId = await fetchFirstVideoId(randomized);
-            document.getElementById('status').textContent = '';
-            if (videoId) {
-                document.getElementById('ytEmbed').src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-                document.getElementById('embed-wrap').style.display = 'block';
-            } else {
-                showFallback(randomized);
-            }
-        } catch(e) {
-            document.getElementById('status').textContent = '';
-            showFallback(randomized);
-        }
-    }
-
-    async function fetchFirstVideoId(query) {
-        const encoded = encodeURIComponent('"' + query + '"');
-        const url = `https://corsproxy.io/?url=https://www.youtube.com/results?search_query=${encoded}`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('fetch failed');
-        const text = await res.text();
-        const matches = text.matchAll(/"videoId":"([a-zA-Z0-9_-]{11})"/g);
-        for (const m of matches) {
-            return m[1];
-        }
-        return null;
-    }
-
-    function showFallback(query) {
-        const el = document.getElementById('fallback-link');
-        el.innerHTML = `couldn't auto-embed — <a href='https://www.youtube.com/results?search_query="${encodeURIComponent(query)}"' target='_blank'>open on YouTube</a>`;
-        el.style.display = 'block';
+        const url = `https://www.youtube.com/results?search_query="${encodeURIComponent(randomized)}"`;
+        window.open(url, '_blank');
     }
     </script>
 
