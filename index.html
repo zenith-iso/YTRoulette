@@ -166,6 +166,28 @@
             display: inline;
         }
 
+        #advPanel .filename-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px 8px;
+            margin: 6px 0 4px 0;
+        }
+
+        #advPanel .filename-grid .checkbox-row {
+            margin: 0;
+        }
+
+        #advPanel .filename-grid label {
+            font-size: 12px;
+        }
+
+        #advPanel small {
+            display: block;
+            font-size: 11px;
+            opacity: 0.7;
+            margin-top: 2px;
+        }
+
         #advPanel hr {
             border: none;
             border-top: 1px solid var(--panel-border);
@@ -203,6 +225,22 @@
     <div id="advPanel">
         <h3>Advanced Search Operators</h3>
 
+        <label>Filename patterns to spin</label>
+        <div class="filename-grid" id="filenameGrid">
+            <div class="checkbox-row"><input type="checkbox" class="filenamePick" value="MOV XXXX" checked><label>MOV XXXX</label></div>
+            <div class="checkbox-row"><input type="checkbox" class="filenamePick" value="MVI XXXX" checked><label>MVI XXXX</label></div>
+            <div class="checkbox-row"><input type="checkbox" class="filenamePick" value="IMG XXXX" checked><label>IMG XXXX</label></div>
+            <div class="checkbox-row"><input type="checkbox" class="filenamePick" value="GOPRXXXX" checked><label>GOPRXXXX</label></div>
+            <div class="checkbox-row"><input type="checkbox" class="filenamePick" value="SAM XXXX" checked><label>SAM XXXX</label></div>
+            <div class="checkbox-row"><input type="checkbox" class="filenamePick" value="DSC XXXX" checked><label>DSC XXXX</label></div>
+            <div class="checkbox-row"><input type="checkbox" class="filenamePick" value="DSCFXXXX" checked><label>DSCFXXXX</label></div>
+            <div class="checkbox-row"><input type="checkbox" class="filenamePick" value="SDV XXXX" checked><label>SDV XXXX</label></div>
+        </div>
+
+        <label for="customFilenames">Other filenames (comma separated)</label>
+        <input type="text" id="customFilenames" placeholder="e.g. VID XXXX, P XXXX">
+        <small>use XXXX where the random digits go — added on top of the checked patterns above</small>
+
         <label for="excludeWords">Exclude words (comma separated)</label>
         <input type="text" id="excludeWords" placeholder="e.g. tutorial, review">
 
@@ -219,6 +257,9 @@
 
         <label for="afterDate">after: (date)</label>
         <input type="date" id="afterDate">
+
+        <label for="otherOperators">Other operators (raw, appended as-is)</label>
+        <input type="text" id="otherOperators" placeholder="e.g. allintitle: OR site:">
 
         <hr>
 
@@ -265,6 +306,19 @@
         const month = String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
         const day = String(Math.floor(Math.random() * 28) + 1).padStart(2, '0');
         return `${year}-${month}-${day}`;
+    }
+
+    function getActivePool() {
+        const checked = Array.from(document.querySelectorAll('.filenamePick:checked')).map(cb => cb.value);
+
+        const custom = document.getElementById('customFilenames').value
+            .split(',')
+            .map(s => s.trim())
+            .filter(Boolean)
+            .map(s => s.includes('XXXX') ? s : `${s} XXXX`);
+
+        const pool = [...checked, ...custom];
+        return pool.length ? pool : queryPool; // fall back to defaults if user unchecks everything
     }
 
     function spinWheel() {
@@ -316,6 +370,8 @@
             }
         }
 
+        const other = document.getElementById('otherOperators').value.trim();
+
         let core = `"${baseQuery}"`;
         if (intitle) core = `intitle:${core}`;
 
@@ -324,12 +380,14 @@
         if (channel) parts.push(`channel:${channel}`);
         if (before) parts.push(`before:${before}`);
         if (after) parts.push(`after:${after}`);
+        if (other) parts.push(other);
 
         return parts.join(' ');
     }
 
     function Gen() {
-        const selection = queryPool[Math.floor(Math.random() * queryPool.length)];
+        const pool = getActivePool();
+        const selection = pool[Math.floor(Math.random() * pool.length)];
         const digit = String(Math.floor(Math.random() * 9999) + 1).padStart(4, '0');
         const randomized = selection.replace("XXXX", digit);
         const query = buildAdvancedQuery(randomized);
