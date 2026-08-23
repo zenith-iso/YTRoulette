@@ -10,6 +10,9 @@
             --btn-bg: black;
             --btn-text: white;
             --credits-color: black;
+            --panel-bg: #f7f7f7;
+            --panel-border: #ccc;
+            --input-bg: #fff;
         }
 
         [data-theme="dark"] {
@@ -18,6 +21,9 @@
             --btn-bg: white;
             --btn-text: black;
             --credits-color: #f0f0f0;
+            --panel-bg: #262626;
+            --panel-border: #444;
+            --input-bg: #333;
         }
 
         body {
@@ -92,6 +98,91 @@
             padding: 4px;
             border-radius: 6px;
         }
+
+        #advToggle {
+            position: fixed;
+            top: 86px;
+            right: 16px;
+            font-size: 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 6px;
+        }
+
+        #advPanel {
+            display: none;
+            position: fixed;
+            top: 122px;
+            right: 16px;
+            width: 260px;
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 10px;
+            padding: 16px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+            text-align: left;
+            z-index: 100;
+            font-size: 14px;
+        }
+
+        #advPanel.open {
+            display: block;
+        }
+
+        #advPanel h3 {
+            margin: 0 0 12px 0;
+            font-size: 15px;
+        }
+
+        #advPanel label {
+            display: block;
+            margin: 10px 0 4px 0;
+            font-size: 13px;
+        }
+
+        #advPanel input[type="text"],
+        #advPanel input[type="date"] {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: 1px solid var(--panel-border);
+            background: var(--input-bg);
+            color: var(--text);
+            font-size: 13px;
+        }
+
+        #advPanel .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin: 10px 0 4px 0;
+        }
+
+        #advPanel .checkbox-row label {
+            margin: 0;
+            display: inline;
+        }
+
+        #advPanel hr {
+            border: none;
+            border-top: 1px solid var(--panel-border);
+            margin: 14px 0;
+        }
+
+        #advPanel .closeBtn {
+            margin-top: 14px;
+            width: 100%;
+            padding: 8px 0;
+            font-size: 14px;
+            border-radius: 8px;
+        }
+
+        #randomStackRow {
+            font-weight: bold;
+        }
     </style>
 
     <h1>YTRoulette</h1>
@@ -107,12 +198,48 @@
 
     <button id="darkToggle" onclick="toggleDark()" title="Toggle dark mode">🌙</button>
     <button id="fastToggle" onclick="toggleFast()" title="Toggle FASTmode">🏃‍♂️‍➡️</button>
+    <button id="advToggle" onclick="toggleAdvanced()" title="Advanced search operators">⚙️</button>
+
+    <div id="advPanel">
+        <h3>Advanced Search Operators</h3>
+
+        <label for="excludeWords">Exclude words (comma separated)</label>
+        <input type="text" id="excludeWords" placeholder="e.g. tutorial, review">
+
+        <div class="checkbox-row">
+            <input type="checkbox" id="intitleCheck">
+            <label for="intitleCheck">intitle: (search in title only)</label>
+        </div>
+
+        <label for="channelName">channel: (channel name)</label>
+        <input type="text" id="channelName" placeholder="e.g. mkbhd">
+
+        <label for="beforeDate">before: (date)</label>
+        <input type="date" id="beforeDate">
+
+        <label for="afterDate">after: (date)</label>
+        <input type="date" id="afterDate">
+
+        <hr>
+
+        <div class="checkbox-row" id="randomStackRow">
+            <input type="checkbox" id="randomStack" onchange="toggleRandomStack()">
+            <label for="randomStack">🎲 stack random operators each spin</label>
+        </div>
+
+        <button class="closeBtn" onclick="toggleAdvanced()">close</button>
+    </div>
 
     <script>
     const queryPool = ["MOV XXXX", "MVI XXXX", "IMG XXXX", "GOPRXXXX", "SAM XXXX", "DSC XXXX", "DSCFXXXX", "SDV XXXX"];
 
     let totalRotation = 0;
     let fastMode = false;
+    let randomStackEnabled = false;
+
+    // pools used to generate random operators when "random stacking" is enabled
+    const randomExcludeWords = ["shorts", "tutorial", "review", "reaction", "compilation", "clip", "fail", "prank", "asmr", "vlog"];
+    const randomChannelHints = ["home", "family", "vacation", "wedding", "birthday", "trip"];
 
     function toggleDark() {
         const html = document.documentElement;
@@ -123,6 +250,21 @@
 
     function toggleFast() {
         fastMode = !fastMode;
+    }
+
+    function toggleAdvanced() {
+        document.getElementById('advPanel').classList.toggle('open');
+    }
+
+    function toggleRandomStack() {
+        randomStackEnabled = document.getElementById('randomStack').checked;
+    }
+
+    function randomDateString(startYear, endYear) {
+        const year = startYear + Math.floor(Math.random() * (endYear - startYear + 1));
+        const month = String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
+        const day = String(Math.floor(Math.random() * 28) + 1).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     }
 
     function spinWheel() {
@@ -142,11 +284,56 @@
         }, fastMode ? 200 : 3000);
     }
 
+    function buildAdvancedQuery(baseQuery) {
+        let intitle = document.getElementById('intitleCheck').checked;
+        let channel = document.getElementById('channelName').value.trim();
+        let before = document.getElementById('beforeDate').value;
+        let after = document.getElementById('afterDate').value;
+        let exclude = document.getElementById('excludeWords').value
+            .split(',')
+            .map(w => w.trim())
+            .filter(Boolean);
+
+        // stack extra randomly-picked operators on top of whatever's set, if enabled
+        if (randomStackEnabled) {
+            const randWord = randomExcludeWords[Math.floor(Math.random() * randomExcludeWords.length)];
+            if (!exclude.includes(randWord)) exclude.push(randWord);
+
+            if (!intitle && Math.random() < 0.3) {
+                intitle = true;
+            }
+
+            if (!channel && Math.random() < 0.25) {
+                channel = randomChannelHints[Math.floor(Math.random() * randomChannelHints.length)];
+            }
+
+            if (!before && Math.random() < 0.3) {
+                before = randomDateString(2015, 2026);
+            }
+
+            if (!after && Math.random() < 0.3) {
+                after = randomDateString(2005, 2015);
+            }
+        }
+
+        let core = `"${baseQuery}"`;
+        if (intitle) core = `intitle:${core}`;
+
+        const parts = [core];
+        exclude.forEach(w => parts.push(`-${w}`));
+        if (channel) parts.push(`channel:${channel}`);
+        if (before) parts.push(`before:${before}`);
+        if (after) parts.push(`after:${after}`);
+
+        return parts.join(' ');
+    }
+
     function Gen() {
         const selection = queryPool[Math.floor(Math.random() * queryPool.length)];
         const digit = String(Math.floor(Math.random() * 9999) + 1).padStart(4, '0');
         const randomized = selection.replace("XXXX", digit);
-        const url = `https://www.youtube.com/results?search_query="${encodeURIComponent(randomized)}"`;
+        const query = buildAdvancedQuery(randomized);
+        const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
         window.open(url, '_blank');
     }
     </script>
