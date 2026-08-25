@@ -8,7 +8,7 @@ you know how old phones/cameras/gopros just dump files with names like `MOV_0042
 
 sometimes you get nothing. sometimes you get someone's unlisted vacation video from 2011. it's a gamble. it's a *roulette*. hence the name, genius.
 
-100% inspired by [KVN AUST](https://www.youtube.com/@KVNAUST)
+100% inspired by [KVN AUST](https://www.youtube.com/@KVNAUST)'s "YouTube Recycle Bin" research
 
 ## "features"
 
